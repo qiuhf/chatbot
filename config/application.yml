@@ -1,0 +1,100 @@
+server:
+  port: 8888
+
+management:
+  endpoints:
+    druid:
+      enabled: true
+  endpoint:
+    health:
+      show-details: ALWAYS
+    info:
+      enabled: true
+  security:
+    # Enable actuator endpoint security
+    enabled: true
+    roles: ACTUATOR
+    # Endpoints that allow unauthenticated access (optional)
+    permit-all:
+      - /actuator/health
+      - /actuator/info
+      - /druid/**
+
+spring:
+  application:
+    name: ai-assistant
+  boot:
+    admin:
+      client:
+        # Point to the existing Admin Server address.
+        url: http://localhost:8889
+        instance:
+          service-url: http://${spring.application.name}:${server.port}
+          management-url: http://${spring.application.name}:${server.port}/actuator
+
+  security:
+    user:
+      name: ${ACTUATOR_USER}
+      password: ${ACTUATOR_PASSWORD}
+      roles: ${ACTUATOR_ROLES:ACTUATOR,ADMIN}
+    filter:
+      dispatcher-types: REQUEST, ASYNC, ERROR
+    csrf:
+      # API services can usually be disabled.
+      enabled: false
+  # 安全过滤链配置
+  autoconfigure:
+    exclude: none
+  datasource:
+    type: com.alibaba.druid.pool.DruidDataSource
+    driver-class-name: com.mysql.jdbc.Driver
+    url: ${DB_URL}
+    username: ${DB_USERNAME}
+    password: ${DB_PASSWORD}
+    druid:
+      initial-size: 5
+      min-idle: 5
+      max-active: 20
+      max-wait: 60000
+      time-between-eviction-runs-millis: 60000
+      min-evictable-idle-time-millis: 300000
+      validation-query: SELECT 1 FROM DUAL
+      test-while-idle: true
+      test-on-borrow: false
+      test-on-return: false
+      pool-prepared-statements: true
+      max-pool-prepared-statement-per-connection-size: 20
+      max-open-prepared-statements: 20
+      # Enable StatFilter (monitoring) and WallFilter (SQL injection defense)
+      filters: stat,wall,slf4j
+      connection-properties: druid.stat.mergeSql=true;druid.stat.slowSqlMillis=5000
+
+      # Web Stat Filter Configuration (Collect JDBC Statistics for Web Applications)
+      web-stat-filter:
+        enabled: true
+        url-pattern: /*
+        exclusions: "*.js,*.gif,*.jpg,*.png,*.css,*.ico,/druid/*"
+
+      # Stat View Servlet Configuration (Druid Monitoring UI)
+      stat-view-servlet:
+        enabled: true
+        url-pattern: /druid/*
+        # Set the login username and password for accessing the monitoring page.
+        login-username: ${DRUID_ADMIN_USER:admin}
+        login-password: ${DRUID_ADMIN_PASS}
+        # Allow who can access
+        # allow: 127.0.0.1 # Allow by default on this machine
+        # deny: # If set, deny takes precedence over allow.
+
+        reset-enable: false
+
+mybatis-plus:
+  # Entity class package path, simplified references in XML
+  type-aliases-package: com.chatbot.entity
+  configuration:
+    # Underline to camel case
+    map-underscore-to-camel-case: true
+    # Disable cache
+    cache-enabled: false
+    # Call the set method when the database field is null.
+    call-setters-on-nulls: true

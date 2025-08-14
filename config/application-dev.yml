@@ -1,0 +1,17 @@
+spring:
+  profiles: prod
+  datasource:
+    druid:
+      stat-view-servlet:
+        # Reset statistics (recommended to be disabled in production environments)
+        reset-enable: true
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "*"
+
+mybatis-plus:
+  configuration:
+    # Output SQL logs. It is recommended to disable this in production environments.
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl

@@ -1,0 +1,20 @@
+spring:
+  profiles: prod
+  datasource:
+    druid:
+      stat-view-servlet:
+        # Reset statistics (recommended to be disabled in production environments)
+        reset-enable: false
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics
+  endpoint:
+    env:
+      enabled: false
+    beans:
+      enabled: false
+    configprops:
+      enabled: false
